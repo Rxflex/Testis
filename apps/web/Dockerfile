@@ -25,7 +25,8 @@ COPY apps/web/ ./apps/web/
 COPY tsconfig.json ./
 COPY turbo.json ./
 
-# Build packages first (skip UI as Next.js can use source directly)
+# Build packages first
+RUN pnpm --filter @testis/ui build
 RUN pnpm --filter @testis/database build
 RUN pnpm --filter @testis/analytics build
 
