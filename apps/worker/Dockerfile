@@ -7,16 +7,19 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all packages first
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/worker/package.json ./apps/worker/
-COPY packages/*/package.json ./packages/*/
-
-# Copy package source code (needed for workspace dependencies)
-COPY packages/ ./packages/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/database/package.json ./packages/database/
+COPY packages/analytics/package.json ./packages/analytics/
+COPY packages/tracking/package.json ./packages/tracking/
 
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
+
+# Copy package source code (needed for workspace dependencies)
+COPY packages/ ./packages/
 
 # Copy app source code
 COPY apps/worker/ ./apps/worker/
@@ -38,10 +41,13 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files for all packages first
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/worker/package.json ./apps/worker/
-COPY packages/*/package.json ./packages/*/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/database/package.json ./packages/database/
+COPY packages/analytics/package.json ./packages/analytics/
+COPY packages/tracking/package.json ./packages/tracking/
 
 # Copy package source code (needed for workspace dependencies)
 COPY packages/ ./packages/
