@@ -68,8 +68,8 @@ The system uses these ports (configured to avoid conflicts):
 - **3001**: Collector API (Fastify)
 - **5432**: PostgreSQL (internal)
 - **6379**: Redis (internal)
-- **8124**: ClickHouse HTTP (mapped from 8123)
-- **9001**: ClickHouse Native (mapped from 9000)
+- **8125**: ClickHouse HTTP (mapped from 8123)
+- **9002**: ClickHouse Native (mapped from 9000)
 
 ## Troubleshooting
 

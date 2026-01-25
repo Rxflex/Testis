@@ -74,7 +74,7 @@ check_database() {
             fi
             ;;
         "ClickHouse")
-            if timeout 10 curl -s "http://localhost:8124/ping" 2>/dev/null | grep -q "Ok"; then
+            if timeout 10 curl -s "http://localhost:8125/ping" 2>/dev/null | grep -q "Ok"; then
                 echo -e "${GREEN}✅ OK${NC}"
                 increment_passed
                 return 0

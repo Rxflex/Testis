@@ -40,8 +40,8 @@ services:
       CLICKHOUSE_PASSWORD: testis_password
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
-      - "8124:8123"
-      - "9001:9000"
+      - "8125:8123"  # Changed from 8124 to 8125
+      - "9002:9000"  # Changed from 9001 to 9002
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - ./docker/clickhouse:/etc/clickhouse-server/config.d

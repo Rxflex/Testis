@@ -30,7 +30,7 @@ docker-compose -f docker-compose.simple.yml logs clickhouse | tail -20
 
 echo ""
 echo "Testing ClickHouse connectivity..."
-curl -s http://localhost:8124/ping && echo "✅ ClickHouse HTTP OK" || echo "❌ ClickHouse HTTP Failed"
+curl -s http://localhost:8125/ping && echo "✅ ClickHouse HTTP OK" || echo "❌ ClickHouse HTTP Failed"
 
 echo ""
 echo "Testing Collector..."
