@@ -13,7 +13,7 @@ const env = envSchema.parse(process.env)
 
 // ClickHouse client
 export const clickhouse = createClient({
-  url: env.CLICKHOUSE_URL,
+  host: env.CLICKHOUSE_URL,
   database: env.CLICKHOUSE_DATABASE,
   username: env.CLICKHOUSE_USERNAME,
   password: env.CLICKHOUSE_PASSWORD
