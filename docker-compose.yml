@@ -44,15 +44,78 @@ services:
       - "9000:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
-      - ./docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
-      - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # Collector service
+  collector:
+    build:
+      context: .
+      dockerfile: apps/collector/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Worker service
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://testis:testis_password@postgres:5432/testis
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_DATABASE=testis
+      - CLICKHOUSE_USERNAME=testis
+      - CLICKHOUSE_PASSWORD=testis_password
+      - NODE_ENV=production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+
+  # Web dashboard
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://testis:testis_password@postgres:5432/testis
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_DATABASE=testis
+      - CLICKHOUSE_USERNAME=testis
+      - CLICKHOUSE_PASSWORD=testis_password
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
 
 volumes:
   postgres_data:
   redis_data:
   clickhouse_data:
+
+networks:
+  default:
+    name: testis-network
