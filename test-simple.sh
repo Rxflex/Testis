@@ -37,4 +37,8 @@ echo "Testing Collector..."
 curl -s http://localhost:3001/health && echo "✅ Collector OK" || echo "❌ Collector Failed"
 
 echo ""
+echo "Testing Web Dashboard..."
+curl -s http://localhost:3003 && echo "✅ Web Dashboard OK" || echo "❌ Web Dashboard Failed"
+
+echo ""
 echo "If this works, we can update the main docker-compose.yml"

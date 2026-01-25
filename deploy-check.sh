@@ -184,7 +184,7 @@ echo -e "${BLUE}🔧 Service Health Checks:${NC}"
 echo "=========================="
 check_service "Collector Health" "http://localhost:3001/health"
 check_service "Collector Metrics" "http://localhost:3001/metrics"
-check_service "Web Dashboard" "http://localhost:3000"
+check_service "Web Dashboard" "http://localhost:3003"
 
 echo ""
 echo -e "${BLUE}🧪 API Functionality Tests:${NC}"

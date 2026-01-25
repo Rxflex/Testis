@@ -64,7 +64,7 @@ Once deployed, the following services will be available:
 ## Port Configuration
 
 The system uses these ports (configured to avoid conflicts):
-- **3000**: Web Dashboard (Next.js)
+- **3003**: Web Dashboard (Next.js)
 - **3001**: Collector API (Fastify)
 - **5432**: PostgreSQL (internal)
 - **6379**: Redis (internal)

@@ -13,7 +13,7 @@ echo ""
 echo "Checking ports used by Testis:"
 echo "------------------------------"
 
-ports=(3000 3001 5432 6379 8123 8124 8125 9000 9001 9002)
+ports=(3001 3003 5432 6379 8123 8124 8125 9000 9001 9002)
 
 for port in "${ports[@]}"; do
     echo -n "Port $port: "
@@ -28,7 +28,7 @@ done
 echo ""
 echo "Docker containers using these ports:"
 echo "-----------------------------------"
-docker ps --format "table {{.Names}}\t{{.Ports}}" | grep -E "(3000|3001|5432|6379|8123|8124|8125|9000|9001|9002)"
+docker ps --format "table {{.Names}}\t{{.Ports}}" | grep -E "(3001|3003|5432|6379|8123|8124|8125|9000|9001|9002)"
 
 echo ""
 echo "Recommended action:"

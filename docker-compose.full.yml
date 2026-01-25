@@ -125,7 +125,7 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
       - COLLECTOR_URL=http://collector:3001
     ports:
-      - "3000:3000"
+      - "3003:3000"
     depends_on:
       postgres:
         condition: service_healthy
