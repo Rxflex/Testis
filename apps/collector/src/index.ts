@@ -23,9 +23,10 @@ const env = envSchema.parse(process.env)
 // Redis connection with retry logic
 const redis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: 3,
-  retryDelayOnFailover: 100,
   enableReadyCheck: true,
-  lazyConnect: true
+  lazyConnect: true,
+  connectTimeout: 10000,
+  commandTimeout: 5000
 })
 
 // Redis connection event handlers
