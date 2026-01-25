@@ -26,6 +26,11 @@ export async function GET(request: NextRequest) {
 
     const startTime = new Date(now.getTime() - timeRangeHours * 60 * 60 * 1000)
 
+    // Format timestamp for ClickHouse DateTime64(3) - use YYYY-MM-DD HH:MM:SS.sss format
+    const formatTimestamp = (date: Date): string => {
+      return date.toISOString().replace('T', ' ').replace('Z', '')
+    }
+
     // Build base query conditions
     const domainCondition = domain ? `AND domain = '${domain}'` : ''
     
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
         countIf(event_type = 'click') as clicks,
         avg(income_score) as avg_income_score
       FROM events 
-      WHERE timestamp >= '${startTime.toISOString()}'
+      WHERE timestamp >= '${formatTimestamp(startTime)}'
       ${domainCondition}
     `
 
@@ -63,7 +68,7 @@ export async function GET(request: NextRequest) {
         uniq(visitor_id) as visitors,
         count() as events
       FROM events 
-      WHERE timestamp >= '${startTime.toISOString()}'
+      WHERE timestamp >= '${formatTimestamp(startTime)}'
       GROUP BY domain
       ORDER BY visitors DESC
       LIMIT 10
@@ -84,7 +89,7 @@ export async function GET(request: NextRequest) {
         countIf(event_type = 'pageview') as pageviews,
         countIf(event_type = 'click') as clicks
       FROM events 
-      WHERE timestamp >= '${startTime.toISOString()}'
+      WHERE timestamp >= '${formatTimestamp(startTime)}'
       ${domainCondition}
       GROUP BY hour
       ORDER BY hour
@@ -104,7 +109,7 @@ export async function GET(request: NextRequest) {
         count() as count,
         avg(income_score) as avg_income
       FROM events 
-      WHERE timestamp >= '${startTime.toISOString()}'
+      WHERE timestamp >= '${formatTimestamp(startTime)}'
         AND predicted_age_bucket != ''
         ${domainCondition}
       GROUP BY predicted_age_bucket
