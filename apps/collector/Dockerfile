@@ -12,11 +12,14 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/collector/package.json ./apps/collector/
 COPY packages/*/package.json ./packages/*/
 
+# Copy package source code (needed for workspace dependencies)
+COPY packages/ ./packages/
+
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source code
-COPY . .
+# Copy app source code
+COPY apps/collector/ ./apps/collector/
 
 # Build the collector
 RUN pnpm --filter @testis/collector build

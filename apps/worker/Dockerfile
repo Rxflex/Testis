@@ -12,11 +12,14 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/worker/package.json ./apps/worker/
 COPY packages/*/package.json ./packages/*/
 
+# Copy package source code (needed for workspace dependencies)
+COPY packages/ ./packages/
+
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source code
-COPY . .
+# Copy app source code
+COPY apps/worker/ ./apps/worker/
 
 # Build packages
 RUN pnpm --filter @testis/database build
@@ -35,6 +38,9 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/worker/package.json ./apps/worker/
 COPY packages/*/package.json ./packages/*/
+
+# Copy package source code (needed for workspace dependencies)
+COPY packages/ ./packages/
 
 # Install production dependencies only
 RUN pnpm install --no-frozen-lockfile --prod
