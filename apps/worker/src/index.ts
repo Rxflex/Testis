@@ -16,8 +16,7 @@ const env = envSchema.parse(process.env)
 
 // Redis connection
 const redis = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: 3,
-  retryDelayOnFailover: 100
+  maxRetriesPerRequest: 3
 })
 
 // Event processing schema
@@ -37,7 +36,13 @@ const eventJobSchema = z.object({
 type EventJob = z.infer<typeof eventJobSchema>
 
 // Batch storage for ClickHouse writes
-let eventBatch: EventJob[] = []
+let eventBatch: (EventJob & {
+  predicted_age_bucket?: string
+  income_score?: number
+  interests?: string[]
+  geo_country?: string
+  geo_city?: string
+})[] = []
 let lastBatchTime = Date.now()
 
 // Process individual event
@@ -103,7 +108,13 @@ async function enrichEvent(job: EventJob): Promise<EventJob & {
   geo_country?: string
   geo_city?: string
 }> {
-  const enriched = { ...job }
+  const enriched: EventJob & {
+    predicted_age_bucket?: string
+    income_score?: number
+    interests?: string[]
+    geo_country?: string
+    geo_city?: string
+  } = { ...job }
 
   // GeoIP enrichment (placeholder)
   if (job.ip) {
@@ -179,8 +190,8 @@ const worker = new Worker('events', async (job) => {
 }, {
   connection: redis,
   concurrency: 10,
-  removeOnComplete: 100,
-  removeOnFail: 50
+  removeOnComplete: { count: 100 },
+  removeOnFail: { count: 50 }
 })
 
 // Worker event handlers
