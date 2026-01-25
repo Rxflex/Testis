@@ -13,7 +13,7 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -40,7 +40,7 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
 # Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 
 # Copy built applications and packages
 COPY --from=base /app/apps/web/.next ./apps/web/.next
