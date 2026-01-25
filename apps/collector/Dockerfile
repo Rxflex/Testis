@@ -31,8 +31,8 @@ RUN pnpm --filter @testis/collector build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install wget for health checks
+RUN apk add --no-cache wget
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -53,8 +53,8 @@ COPY --from=base /app/apps/collector/dist ./apps/collector/dist
 EXPOSE 3001
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
 
 # Start the application
 CMD ["node", "apps/collector/dist/index.js"]
