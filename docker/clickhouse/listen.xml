@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<clickhouse>
+    <!-- Listen on all IPv4 interfaces -->
+    <listen_host>0.0.0.0</listen_host>
+    
+    <!-- Disable IPv6 to avoid binding issues -->
+    <listen_host replace="1">0.0.0.0</listen_host>
+    
+    <!-- HTTP port -->
+    <http_port>8123</http_port>
+    
+    <!-- TCP port -->
+    <tcp_port>9000</tcp_port>
+    
+    <!-- Interserver HTTP port -->
+    <interserver_http_port>9009</interserver_http_port>
+</clickhouse>
