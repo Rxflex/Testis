@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
             domains: true,
             apiKeys: true
           }
-        }
+        },
+        apiKeys: true
       }
     })
 

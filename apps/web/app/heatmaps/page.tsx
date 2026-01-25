@@ -6,7 +6,7 @@ import { Skeleton } from "@testis/ui"
 import { 
   MousePointer, 
   Eye, 
-  Click,
+  Activity,
   Move,
   Monitor,
   Smartphone,
@@ -32,7 +32,7 @@ function HeatmapPreview({ title, type, loading }: { title: string; type: 'click'
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
-          {type === 'click' && <Click className="h-4 w-4" />}
+          {type === 'click' && <MousePointer className="h-4 w-4" />}
           {type === 'move' && <MousePointer className="h-4 w-4" />}
           {type === 'scroll' && <Move className="h-4 w-4" />}
           {title}

@@ -14,11 +14,12 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  api_key   String   @unique @default(cuid())
+  password  String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   projects Project[]
+  apiKeys  ApiKey[]
 
   @@map("users")
 }
@@ -33,6 +34,7 @@ model Project {
 
   user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   domains Domain[]
+  apiKeys ApiKey[]
 
   @@map("projects")
 }
@@ -54,12 +56,17 @@ model Domain {
 model ApiKey {
   id         String   @id @default(cuid())
   key        String   @unique
-  name       String?
+  name       String
+  project_id String
   user_id    String
+  permissions String[] @default(["read", "write"])
   active     Boolean  @default(true)
   last_used  DateTime?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
 }

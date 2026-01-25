@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user with default project and API key
+    // Create user with default project
     const user = await prisma.user.create({
       data: {
         name,
@@ -44,24 +44,37 @@ export async function POST(request: NextRequest) {
         projects: {
           create: {
             name: 'Default Project',
-            description: 'Your first analytics project',
-            apiKeys: {
-              create: {
-                name: 'Default API Key',
-                key: `testis_${randomBytes(32).toString('hex')}`,
-                permissions: ['read', 'write']
-              }
-            }
+            description: 'Your first analytics project'
           }
         }
       },
+      include: {
+        projects: true
+      }
+    })
+
+    // Create API key for the default project
+    const apiKey = await prisma.apiKey.create({
+      data: {
+        name: 'Default API Key',
+        key: `testis_${randomBytes(32).toString('hex')}`,
+        permissions: ['read', 'write'],
+        project_id: user.projects[0].id,
+        user_id: user.id
+      }
+    })
+
+    // Fetch user with all relations
+    const userWithRelations = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         projects: {
           include: {
             domains: true,
             apiKeys: true
           }
-        }
+        },
+        apiKeys: true
       }
     })
 
@@ -80,11 +93,11 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        createdAt: user.createdAt,
-        projects: user.projects
+        id: userWithRelations!.id,
+        email: userWithRelations!.email,
+        name: userWithRelations!.name,
+        createdAt: userWithRelations!.created_at,
+        projects: userWithRelations!.projects
       }
     })
 

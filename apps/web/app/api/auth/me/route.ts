@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
             domains: true,
             apiKeys: true
           }
-        }
+        },
+        apiKeys: true
       }
     })
 
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        createdAt: user.createdAt,
+        createdAt: user.created_at,
         projects: user.projects
       }
     })
