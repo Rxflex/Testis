@@ -12,11 +12,11 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
+# Install dependencies first
+RUN pnpm install --no-frozen-lockfile
+
 # Copy package source code (needed for workspace dependencies)
 COPY packages/ ./packages/
-
-# Install dependencies
-RUN pnpm install --no-frozen-lockfile
 
 # Copy app source code
 COPY apps/web/ ./apps/web/
