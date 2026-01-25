@@ -231,9 +231,6 @@ export default function HomePage() {
               </h1>
               <p className="text-sm text-muted-foreground">
                 Real-time insights and user profiling data
-                {data?.isMockData && (
-                  <span className="ml-2 text-amber-600">• Using mock data</span>
-                )}
               </p>
             </div>
             

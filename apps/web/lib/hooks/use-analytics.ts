@@ -61,14 +61,22 @@ export function useAnalytics(options: UseAnalyticsOptions = {}) {
       const response = await fetch(`/api/analytics/overview?${params}`)
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
       
       const result = await response.json()
+      
+      // Check if response contains error
+      if (result.error) {
+        throw new Error(result.message || result.error)
+      }
+      
       setData(result)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch analytics data')
+      setData(null) // Clear data on error
       console.error('Analytics fetch error:', err)
     } finally {
       setLoading(false)

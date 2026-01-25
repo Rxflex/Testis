@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
   })
 
   try {
-
     // Calculate time range
     const now = new Date()
     const timeRangeHours = {
@@ -167,37 +166,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Analytics API error:', error)
     
-    // Return mock data if ClickHouse is not available
-    return NextResponse.json({
-      overview: {
-        totalEvents: 45231,
-        uniqueVisitors: 12847,
-        pageviews: 38942,
-        clicks: 8934,
-        avgIncomeScore: 65.4,
-        realtimeVisitors: 23
+    // Return proper error response instead of mock data
+    return NextResponse.json(
+      { 
+        error: 'Failed to fetch analytics data',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        code: 'ANALYTICS_FETCH_ERROR'
       },
-      topDomains: [
-        { domain: 'example.com', visitors: 8234, events: 25431 },
-        { domain: 'test.com', visitors: 3421, events: 12890 },
-        { domain: 'demo.com', visitors: 1192, events: 6910 }
-      ],
-      trafficData: Array.from({ length: 24 }, (_, i) => ({
-        hour: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
-        visitors: Math.floor(Math.random() * 100) + 50,
-        pageviews: Math.floor(Math.random() * 200) + 100,
-        clicks: Math.floor(Math.random() * 50) + 20
-      })),
-      demographics: [
-        { ageBucket: '25-34', count: 4521, avgIncome: 72.3 },
-        { ageBucket: '18-24', count: 3234, avgIncome: 58.7 },
-        { ageBucket: '35-44', count: 2987, avgIncome: 81.2 },
-        { ageBucket: '45-54', count: 1876, avgIncome: 89.4 },
-        { ageBucket: '55+', count: 1229, avgIncome: 76.8 }
-      ],
-      timeRange,
-      generatedAt: new Date().toISOString(),
-      isMockData: true
-    })
+      { status: 500 }
+    )
   }
 }
