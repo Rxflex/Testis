@@ -21,6 +21,10 @@ RUN pnpm install --no-frozen-lockfile
 # Copy app source code
 COPY apps/collector/ ./apps/collector/
 
+# Copy root tsconfig.json and other config files
+COPY tsconfig.json ./
+COPY turbo.json ./
+
 # Build the collector
 RUN pnpm --filter @testis/collector build
 

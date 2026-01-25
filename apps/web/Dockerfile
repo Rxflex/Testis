@@ -21,6 +21,10 @@ RUN pnpm install --no-frozen-lockfile
 # Copy app source code
 COPY apps/web/ ./apps/web/
 
+# Copy root tsconfig.json and other config files
+COPY tsconfig.json ./
+COPY turbo.json ./
+
 # Build packages first
 RUN pnpm --filter @testis/ui build
 RUN pnpm --filter @testis/database build
