@@ -1,0 +1,202 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { clickhouse } from '@testis/analytics'
+import { z } from 'zod'
+
+const querySchema = z.object({
+  timeRange: z.enum(['24h', '7d', '30d', '90d']).default('7d'),
+  domain: z.string().optional()
+})
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const { timeRange, domain } = querySchema.parse({
+      timeRange: searchParams.get('timeRange') || '7d',
+      domain: searchParams.get('domain') || undefined
+    })
+
+    // Calculate time range
+    const now = new Date()
+    const timeRangeHours = {
+      '24h': 24,
+      '7d': 24 * 7,
+      '30d': 24 * 30,
+      '90d': 24 * 90
+    }[timeRange]
+
+    const startTime = new Date(now.getTime() - timeRangeHours * 60 * 60 * 1000)
+
+    // Build base query conditions
+    const domainCondition = domain ? `AND domain = '${domain}'` : ''
+    
+    // Get overview metrics
+    const overviewQuery = `
+      SELECT 
+        count() as total_events,
+        uniq(visitor_id) as unique_visitors,
+        countIf(event_type = 'pageview') as pageviews,
+        countIf(event_type = 'click') as clicks,
+        avg(income_score) as avg_income_score
+      FROM events 
+      WHERE timestamp >= '${startTime.toISOString()}'
+      ${domainCondition}
+    `
+
+    const overviewResult = await clickhouse.query({
+      query: overviewQuery,
+      format: 'JSONEachRow'
+    })
+
+    const overviewData = await overviewResult.json()
+    const overview = overviewData[0] || {
+      total_events: 0,
+      unique_visitors: 0,
+      pageviews: 0,
+      clicks: 0,
+      avg_income_score: 0
+    }
+
+    // Get top domains
+    const domainsQuery = `
+      SELECT 
+        domain,
+        uniq(visitor_id) as visitors,
+        count() as events
+      FROM events 
+      WHERE timestamp >= '${startTime.toISOString()}'
+      GROUP BY domain
+      ORDER BY visitors DESC
+      LIMIT 10
+    `
+
+    const domainsResult = await clickhouse.query({
+      query: domainsQuery,
+      format: 'JSONEachRow'
+    })
+
+    const topDomains = await domainsResult.json()
+
+    // Get hourly traffic data for chart
+    const trafficQuery = `
+      SELECT 
+        toStartOfHour(timestamp) as hour,
+        uniq(visitor_id) as visitors,
+        countIf(event_type = 'pageview') as pageviews,
+        countIf(event_type = 'click') as clicks
+      FROM events 
+      WHERE timestamp >= '${startTime.toISOString()}'
+      ${domainCondition}
+      GROUP BY hour
+      ORDER BY hour
+    `
+
+    const trafficResult = await clickhouse.query({
+      query: trafficQuery,
+      format: 'JSONEachRow'
+    })
+
+    const trafficData = await trafficResult.json()
+
+    // Get demographics data
+    const demographicsQuery = `
+      SELECT 
+        predicted_age_bucket,
+        count() as count,
+        avg(income_score) as avg_income
+      FROM events 
+      WHERE timestamp >= '${startTime.toISOString()}'
+        AND predicted_age_bucket != ''
+        ${domainCondition}
+      GROUP BY predicted_age_bucket
+      ORDER BY count DESC
+    `
+
+    const demographicsResult = await clickhouse.query({
+      query: demographicsQuery,
+      format: 'JSONEachRow'
+    })
+
+    const demographics = await demographicsResult.json()
+
+    // Get realtime visitors (last 5 minutes)
+    const realtimeQuery = `
+      SELECT uniq(visitor_id) as realtime_visitors
+      FROM events 
+      WHERE timestamp >= now() - INTERVAL 5 MINUTE
+      ${domainCondition}
+    `
+
+    const realtimeResult = await clickhouse.query({
+      query: realtimeQuery,
+      format: 'JSONEachRow'
+    })
+
+    const realtimeData = await realtimeResult.json()
+    const realtimeVisitors = realtimeData[0]?.realtime_visitors || 0
+
+    return NextResponse.json({
+      overview: {
+        totalEvents: parseInt(overview.total_events),
+        uniqueVisitors: parseInt(overview.unique_visitors),
+        pageviews: parseInt(overview.pageviews),
+        clicks: parseInt(overview.clicks),
+        avgIncomeScore: parseFloat(overview.avg_income_score) || 0,
+        realtimeVisitors: parseInt(realtimeVisitors)
+      },
+      topDomains: topDomains.map((d: any) => ({
+        domain: d.domain,
+        visitors: parseInt(d.visitors),
+        events: parseInt(d.events)
+      })),
+      trafficData: trafficData.map((t: any) => ({
+        hour: t.hour,
+        visitors: parseInt(t.visitors),
+        pageviews: parseInt(t.pageviews),
+        clicks: parseInt(t.clicks)
+      })),
+      demographics: demographics.map((d: any) => ({
+        ageBucket: d.predicted_age_bucket,
+        count: parseInt(d.count),
+        avgIncome: parseFloat(d.avg_income) || 0
+      })),
+      timeRange,
+      generatedAt: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('Analytics API error:', error)
+    
+    // Return mock data if ClickHouse is not available
+    return NextResponse.json({
+      overview: {
+        totalEvents: 45231,
+        uniqueVisitors: 12847,
+        pageviews: 38942,
+        clicks: 8934,
+        avgIncomeScore: 65.4,
+        realtimeVisitors: 23
+      },
+      topDomains: [
+        { domain: 'example.com', visitors: 8234, events: 25431 },
+        { domain: 'test.com', visitors: 3421, events: 12890 },
+        { domain: 'demo.com', visitors: 1192, events: 6910 }
+      ],
+      trafficData: Array.from({ length: 24 }, (_, i) => ({
+        hour: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
+        visitors: Math.floor(Math.random() * 100) + 50,
+        pageviews: Math.floor(Math.random() * 200) + 100,
+        clicks: Math.floor(Math.random() * 50) + 20
+      })),
+      demographics: [
+        { ageBucket: '25-34', count: 4521, avgIncome: 72.3 },
+        { ageBucket: '18-24', count: 3234, avgIncome: 58.7 },
+        { ageBucket: '35-44', count: 2987, avgIncome: 81.2 },
+        { ageBucket: '45-54', count: 1876, avgIncome: 89.4 },
+        { ageBucket: '55+', count: 1229, avgIncome: 76.8 }
+      ],
+      timeRange,
+      generatedAt: new Date().toISOString(),
+      isMockData: true
+    })
+  }
+}

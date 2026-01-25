@@ -1,0 +1,27 @@
+{
+  "name": "testis",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo clean",
+    "seed": "tsx scripts/seed-api-keys.ts",
+    "load-test": "tsx scripts/load-test.ts",
+    "setup": "pnpm seed && echo '✅ Setup complete! Run pnpm dev to start development servers.'",
+    "test:performance": "echo '🚀 Running performance tests...' && pnpm load-test",
+    "build:tracking": "pnpm --filter @testis/tracking build"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.12.4",
+    "turbo": "^1.12.4",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.1"
+  },
+  "packageManager": "pnpm@8.15.1",
+  "engines": {
+    "node": ">=18"
+  }
+}

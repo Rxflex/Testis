@@ -1,0 +1,24 @@
+{
+  "name": "@testis/tracking",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/testis.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.1",
+    "terser-webpack-plugin": "^5.3.10",
+    "eslint": "^8.57.0"
+  }
+}

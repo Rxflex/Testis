@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for application state
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: testis
+      POSTGRES_USER: testis
+      POSTGRES_PASSWORD: testis_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - testis-network
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - testis-network
+
+  # ClickHouse for analytics
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.12-alpine
+    environment:
+      CLICKHOUSE_DB: testis
+      CLICKHOUSE_USER: testis
+      CLICKHOUSE_PASSWORD: testis_password
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./docker/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./docker/init/01-init-clickhouse.sql:/docker-entrypoint-initdb.d/01-init-clickhouse.sql
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - testis-network
+
+  # Testis Collector (Fastify API)
+  collector:
+    build:
+      context: .
+      dockerfile: apps/collector/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - testis-network
+
+  # Testis Worker (Background Processor)
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://testis:testis_password@postgres:5432/testis
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_DATABASE=testis
+      - CLICKHOUSE_USERNAME=testis
+      - CLICKHOUSE_PASSWORD=testis_password
+      - BATCH_SIZE=1000
+      - BATCH_INTERVAL_MS=5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - testis-network
+
+  # Testis Web Dashboard (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://testis:testis_password@postgres:5432/testis
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_DATABASE=testis
+      - CLICKHOUSE_USERNAME=testis
+      - CLICKHOUSE_PASSWORD=testis_password
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-testis-dev-secret-change-in-production}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - COLLECTOR_URL=http://collector:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      collector:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - testis-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  clickhouse_data:
+
+networks:
+  testis-network:
+    driver: bridge
