@@ -3,10 +3,10 @@ import { z } from 'zod'
 
 // Environment validation
 const envSchema = z.object({
-  CLICKHOUSE_URL: z.string().default('http://localhost:8123'),
+  CLICKHOUSE_URL: z.string().default('http://localhost:8125'),
   CLICKHOUSE_DATABASE: z.string().default('testis'),
-  CLICKHOUSE_USERNAME: z.string().default('default'),
-  CLICKHOUSE_PASSWORD: z.string().default('')
+  CLICKHOUSE_USERNAME: z.string().default('testis'),
+  CLICKHOUSE_PASSWORD: z.string().default('testis_password')
 })
 
 const env = envSchema.parse(process.env)
