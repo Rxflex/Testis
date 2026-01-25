@@ -35,8 +35,26 @@ export default function RegisterPage() {
     }
 
     try {
-      // TODO: Implement actual registration
-      throw new Error('Registration system not implemented yet')
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      // Redirect to dashboard
+      window.location.href = '/'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {

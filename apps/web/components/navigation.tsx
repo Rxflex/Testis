@@ -6,9 +6,12 @@ import {
   MousePointer, 
   Settings, 
   Globe,
-  Activity
+  Activity,
+  Code,
+  LogOut
 } from 'lucide-react'
 import { cn } from '@testis/ui'
+import { Button } from '@testis/ui'
 
 const navigation = [
   { name: 'Overview', href: '/', icon: BarChart3 },
@@ -16,11 +19,20 @@ const navigation = [
   { name: 'Heatmaps', href: '/heatmaps', icon: MousePointer },
   { name: 'Domains', href: '/domains', icon: Globe },
   { name: 'Realtime', href: '/realtime', icon: Activity },
-  { name: 'Install Script', href: '/install', icon: Settings },
+  { name: 'Install Script', href: '/install', icon: Code },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      window.location.href = '/auth/login'
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   return (
     <nav className="flex flex-col w-64 bg-card border-r border-border">
@@ -56,7 +68,17 @@ export function Navigation() {
       </div>
       
       <div className="p-4 border-t border-border">
-        <div className="text-xs text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </Button>
+        
+        <div className="text-xs text-muted-foreground mt-3">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-green-500 rounded-full" />
             All systems operational
