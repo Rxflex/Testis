@@ -12,7 +12,7 @@ import {
   Settings,
   AlertTriangle,
   ExternalLink,
-  Activity
+  BarChart3
 } from "lucide-react"
 import { useState } from "react"
 
@@ -345,7 +345,7 @@ export default function App({ Component, pageProps }) {
                     API Keys
                   </Button>
                   <Button variant="outline" size="sm" className="w-full justify-start">
-                    <Activity className="h-3 w-3 mr-2" />
+                    <BarChart3 className="h-3 w-3 mr-2" />
                     View Realtime
                   </Button>
                 </CardContent>

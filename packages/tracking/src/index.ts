@@ -380,7 +380,8 @@ const testis: TestisGlobal = function(command: string, ...args: any[]) {
     // Process queued commands
     if (testis.q) {
       testis.q.forEach((queuedArgs: any[]) => {
-        testis.apply(null, queuedArgs)
+        const [command, ...commandArgs] = queuedArgs
+        testis(command, ...commandArgs)
       })
       testis.q = []
     }
