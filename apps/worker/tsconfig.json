@@ -4,7 +4,8 @@
     "outDir": "./dist",
     "noEmit": false,
     "module": "commonjs",
-    "target": "ES2020"
+    "target": "ES2020",
+    "moduleResolution": "node"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "../../packages/tracking/**/*"]
