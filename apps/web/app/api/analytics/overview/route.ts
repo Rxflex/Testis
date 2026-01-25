@@ -8,12 +8,13 @@ const querySchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const { timeRange, domain } = querySchema.parse({
+    timeRange: searchParams.get('timeRange') || '7d',
+    domain: searchParams.get('domain') || undefined
+  })
+
   try {
-    const { searchParams } = new URL(request.url)
-    const { timeRange, domain } = querySchema.parse({
-      timeRange: searchParams.get('timeRange') || '7d',
-      domain: searchParams.get('domain') || undefined
-    })
 
     // Calculate time range
     const now = new Date()
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       format: 'JSONEachRow'
     })
 
-    const overviewData = await overviewResult.json()
+    const overviewData = await overviewResult.json() as any[]
     const overview = overviewData[0] || {
       total_events: 0,
       unique_visitors: 0,
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
       format: 'JSONEachRow'
     })
 
-    const topDomains = await domainsResult.json()
+    const topDomains = await domainsResult.json() as any[]
 
     // Get hourly traffic data for chart
     const trafficQuery = `
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
       format: 'JSONEachRow'
     })
 
-    const trafficData = await trafficResult.json()
+    const trafficData = await trafficResult.json() as any[]
 
     // Get demographics data
     const demographicsQuery = `
@@ -116,7 +117,7 @@ export async function GET(request: NextRequest) {
       format: 'JSONEachRow'
     })
 
-    const demographics = await demographicsResult.json()
+    const demographics = await demographicsResult.json() as any[]
 
     // Get realtime visitors (last 5 minutes)
     const realtimeQuery = `
@@ -131,7 +132,7 @@ export async function GET(request: NextRequest) {
       format: 'JSONEachRow'
     })
 
-    const realtimeData = await realtimeResult.json()
+    const realtimeData = await realtimeResult.json() as any[]
     const realtimeVisitors = realtimeData[0]?.realtime_visitors || 0
 
     return NextResponse.json({
